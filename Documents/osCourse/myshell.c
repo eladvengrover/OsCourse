@@ -1,3 +1,6 @@
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 typedef enum {
     AMPERSAND = '&',
@@ -22,24 +25,48 @@ int prepare(void) {
 
 
 int process_arglist(int count, char** arglist) {
-    switch (get_operation_type(count, arglist)) {
-    case REG:
-        break;
-    case REG_BG:
-        break;
-    case SING_PIPE:
-        break;
-    case INPUT:
-        break;
-    case OUTPUT:
-        break;
-    default:
-        break;
+    OperationType op = get_operation_type(count, arglist);
+    int pid = fork();
+    if (pid == -1) {
+        return -1;
+    }
+    if (pid == 0) {
+        // Child proccess
+        return child_handler(count, arglist, op);
+    } else {
+        // Parent proccess
+        int status, child_pid;
+        while (op != REG_BG && (child_pid = wait(&status) > 0)) { }
+
+        return 1;
+    }
+    
+}
+
+int child_handler(int count, char** arglist, OperationType op) {
+    switch (op) {
+        case REG:
+            return handle_reg_op(count, arglist);
+            break;
+        case REG_BG:
+            break;
+        case SING_PIPE:
+            break;
+        case INPUT:
+            break;
+        case OUTPUT:
+            break;
+        default:
+            break;
     }
 }
 
 int handle_reg_op(int count, char** arglist) {
-
+    if (execvp(arglist[0], arglist) == -1) {
+        perror("execvp failed!");
+        exit(1);
+    }
+    return 1;
 }
 
 int handle_reg_bg_op(int count, char** arglist) {
