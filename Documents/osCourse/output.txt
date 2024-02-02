@@ -1,52 +1,7 @@
-myshell.c: In function 'process_arglist':
-myshell.c:48:45: warning: implicit declaration of function 'wait' [-Wimplicit-function-declaration]
-   48 |         while (op != REG_BG && (child_pid = wait(&status) > 0)) { }
-      |                                             ^~~~
-myshell.c: In function 'get_operation_type':
-myshell.c:98:22: warning: implicit declaration of function 'strcmp' [-Wimplicit-function-declaration]
-   98 |     if (count > 0 && strcmp(arglist[count - 1], AMPERSAND)) {
-      |                      ^~~~~~
-myshell.c:98:49: warning: passing argument 2 of 'strcmp' makes pointer from integer without a cast [-Wint-conversion]
-   98 |     if (count > 0 && strcmp(arglist[count - 1], AMPERSAND)) {
-      |                                                 ^~~~~~~~~
-      |                                                 |
-      |                                                 int
-myshell.c:98:49: note: expected 'const char *' but argument is of type 'int'
-myshell.c:101:49: warning: passing argument 2 of 'strcmp' makes pointer from integer without a cast [-Wint-conversion]
-  101 |     if (count > 1 && strcmp(arglist[count - 2], LEFT_REDIRECT)) {
-      |                                                 ^~~~~~~~~~~~~
-      |                                                 |
-      |                                                 int
-myshell.c:101:49: note: expected 'const char *' but argument is of type 'int'
-myshell.c:104:49: warning: passing argument 2 of 'strcmp' makes pointer from integer without a cast [-Wint-conversion]
-  104 |     if (count > 1 && strcmp(arglist[count - 2], RIGHT_REDIRECT)) {
-      |                                                 ^~~~~~~~~~~~~~
-      |                                                 |
-      |                                                 int
-myshell.c:104:49: note: expected 'const char *' but argument is of type 'int'
-myshell.c:108:32: warning: passing argument 2 of 'strcmp' makes pointer from integer without a cast [-Wint-conversion]
-  108 |         if (strcmp(arglist[i], PIPE)) {
-      |                                ^~~~
-      |                                |
-      |                                int
-myshell.c:108:32: note: expected 'const char *' but argument is of type 'int'
-myshell.c: In function 'child_handler':
-myshell.c:71:1: warning: control reaches end of non-void function [-Wreturn-type]
-   71 | }
-      | ^
 myshell.c: In function 'handle_reg_bg_op':
-myshell.c:83:1: warning: control reaches end of non-void function [-Wreturn-type]
-   83 | }
-      | ^
-myshell.c: In function 'handle_pipe_op':
-myshell.c:87:1: warning: control reaches end of non-void function [-Wreturn-type]
-   87 | }
-      | ^
-myshell.c: In function 'handle_input_op':
-myshell.c:91:1: warning: control reaches end of non-void function [-Wreturn-type]
-   91 | }
-      | ^
-myshell.c: In function 'handle_output_op':
-myshell.c:95:1: warning: control reaches end of non-void function [-Wreturn-type]
-   95 | }
-      | ^
+myshell.c:92:26: warning: implicit declaration of function 'strdup'; did you mean 'strcmp'? [-Wimplicit-function-declaration]
+   92 |         new_arglist[i] = strdup(arglist[i]);
+      |                          ^~~~~~
+      |                          strcmp
+myshell.c:92:24: warning: assignment to 'char *' from 'int' makes pointer from integer without a cast [-Wint-conversion]
+   92 |         new_arglist[i] = strdup(arglist[i]);
