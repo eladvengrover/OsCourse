@@ -17,6 +17,15 @@ typedef enum {
     OUTPUT = 5
 } OperationType;
 
+int child_handler(int count, char** arglist, OperationType op);
+int handle_reg_op(int count, char** arglist);
+int handle_reg_bg_op(int count, char** arglist);
+int handle_pipe_op(int count, char** arglist);
+int handle_input_op(int count, char** arglist);
+int handle_output_op(int count, char** arglist);
+OperationType get_operation_type(int count, char **arglist);
+
+
 
 int prepare(void) {
     return 0;
