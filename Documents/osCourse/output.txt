@@ -1,0 +1,69 @@
+myshell.c: In function 'process_arglist':
+myshell.c:28:24: warning: implicit declaration of function 'get_operation_type' [-Wimplicit-function-declaration]
+   28 |     OperationType op = get_operation_type(count, arglist);
+      |                        ^~~~~~~~~~~~~~~~~~
+myshell.c:35:16: warning: implicit declaration of function 'child_handler' [-Wimplicit-function-declaration]
+   35 |         return child_handler(count, arglist, op);
+      |                ^~~~~~~~~~~~~
+myshell.c:39:45: warning: implicit declaration of function 'wait' [-Wimplicit-function-declaration]
+   39 |         while (op != REG_BG && (child_pid = wait(&status) > 0)) { }
+      |                                             ^~~~
+myshell.c: In function 'child_handler':
+myshell.c:49:20: warning: implicit declaration of function 'handle_reg_op' [-Wimplicit-function-declaration]
+   49 |             return handle_reg_op(count, arglist);
+      |                    ^~~~~~~~~~~~~
+myshell.c: At top level:
+myshell.c:88:15: error: conflicting types for 'get_operation_type'
+   88 | OperationType get_operation_type(int count, char **arglist) {
+      |               ^~~~~~~~~~~~~~~~~~
+myshell.c:28:24: note: previous implicit declaration of 'get_operation_type' was here
+   28 |     OperationType op = get_operation_type(count, arglist);
+      |                        ^~~~~~~~~~~~~~~~~~
+myshell.c: In function 'get_operation_type':
+myshell.c:89:22: warning: implicit declaration of function 'strcmp' [-Wimplicit-function-declaration]
+   89 |     if (count > 0 && strcmp(arglist[count - 1], AMPERSAND)) {
+      |                      ^~~~~~
+myshell.c:89:49: warning: passing argument 2 of 'strcmp' makes pointer from integer without a cast [-Wint-conversion]
+   89 |     if (count > 0 && strcmp(arglist[count - 1], AMPERSAND)) {
+      |                                                 ^~~~~~~~~
+      |                                                 |
+      |                                                 int
+myshell.c:89:49: note: expected 'const char *' but argument is of type 'int'
+myshell.c:92:49: warning: passing argument 2 of 'strcmp' makes pointer from integer without a cast [-Wint-conversion]
+   92 |     if (count > 1 && strcmp(arglist[count - 2], LEFT_REDIRECT)) {
+      |                                                 ^~~~~~~~~~~~~
+      |                                                 |
+      |                                                 int
+myshell.c:92:49: note: expected 'const char *' but argument is of type 'int'
+myshell.c:95:49: warning: passing argument 2 of 'strcmp' makes pointer from integer without a cast [-Wint-conversion]
+   95 |     if (count > 1 && strcmp(arglist[count - 2], RIGHT_REDIRECT)) {
+      |                                                 ^~~~~~~~~~~~~~
+      |                                                 |
+      |                                                 int
+myshell.c:95:49: note: expected 'const char *' but argument is of type 'int'
+myshell.c:99:32: warning: passing argument 2 of 'strcmp' makes pointer from integer without a cast [-Wint-conversion]
+   99 |         if (strcmp(arglist[i], PIPE)) {
+      |                                ^~~~
+      |                                |
+      |                                int
+myshell.c:99:32: note: expected 'const char *' but argument is of type 'int'
+myshell.c: In function 'child_handler':
+myshell.c:62:1: warning: control reaches end of non-void function [-Wreturn-type]
+   62 | }
+      | ^
+myshell.c: In function 'handle_reg_bg_op':
+myshell.c:74:1: warning: control reaches end of non-void function [-Wreturn-type]
+   74 | }
+      | ^
+myshell.c: In function 'handle_pipe_op':
+myshell.c:78:1: warning: control reaches end of non-void function [-Wreturn-type]
+   78 | }
+      | ^
+myshell.c: In function 'handle_input_op':
+myshell.c:82:1: warning: control reaches end of non-void function [-Wreturn-type]
+   82 | }
+      | ^
+myshell.c: In function 'handle_output_op':
+myshell.c:86:1: warning: control reaches end of non-void function [-Wreturn-type]
+   86 | }
+      | ^
