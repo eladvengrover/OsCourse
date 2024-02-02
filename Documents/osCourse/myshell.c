@@ -48,7 +48,12 @@ int process_arglist(int count, char** arglist) {
     } else {
         // Parent proccess
         int status, child_pid;
-        while (op != REG_BG && (child_pid = wait(&status) > 0)) { }
+        if (op != REG_BG) {
+            child_pid = waitpid(pid, &status, 0);
+            if (child_pid == -1) {
+                return -1;
+            }
+         }
 
         return 1;
     }
@@ -61,6 +66,7 @@ int child_handler(int count, char** arglist, OperationType op) {
             return handle_reg_op(count, arglist);
             break;
         case REG_BG:
+            return handle_reg_bg_op(count, arglist);
             break;
         case SING_PIPE:
             break;
@@ -75,6 +81,7 @@ int child_handler(int count, char** arglist, OperationType op) {
 }
 
 int handle_reg_op(int count, char** arglist) {
+    printf("handling reg op\n");
     if (execvp(arglist[0], arglist) == -1) {
         perror("execvp failed!");
         exit(1);
@@ -83,7 +90,16 @@ int handle_reg_op(int count, char** arglist) {
 }
 
 int handle_reg_bg_op(int count, char** arglist) {
-    return 0;
+    printf("handling reg bg op\n");
+
+    free((char*) arglist[count]);
+    arglist[count - 1] = NULL;
+
+    if (execvp(arglist[0], arglist) == -1) {
+        perror("execvp failed!");
+        exit(1);
+    }
+    return 1;
 }
 
 int handle_pipe_op(int count, char** arglist) {
