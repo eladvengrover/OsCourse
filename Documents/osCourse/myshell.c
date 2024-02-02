@@ -1,6 +1,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/wait.h>
+#include <string.h>
 
 typedef enum {
     AMPERSAND = '&',
@@ -35,6 +37,7 @@ int prepare(void) {
 
 int process_arglist(int count, char** arglist) {
     OperationType op = get_operation_type(count, arglist);
+    printf("op: %d\n", op);
     int pid = fork();
     if (pid == -1) {
         return -1;
@@ -68,6 +71,7 @@ int child_handler(int count, char** arglist, OperationType op) {
         default:
             break;
     }
+    return 0;
 }
 
 int handle_reg_op(int count, char** arglist) {
@@ -79,33 +83,33 @@ int handle_reg_op(int count, char** arglist) {
 }
 
 int handle_reg_bg_op(int count, char** arglist) {
-    
+    return 0;
 }
 
 int handle_pipe_op(int count, char** arglist) {
-
+    return 0;
 }
 
 int handle_input_op(int count, char** arglist) {
-    
+    return 0;
 }
 
 int handle_output_op(int count, char** arglist) {
-    
+    return 0;
 }
 
 OperationType get_operation_type(int count, char **arglist) {
-    if (count > 0 && strcmp(arglist[count - 1], AMPERSAND)) {
+    if (count > 0 && strcmp(arglist[count - 1], ((char[]) {AMPERSAND, '\0'})) == 0) {
         return REG_BG;
     }
-    if (count > 1 && strcmp(arglist[count - 2], LEFT_REDIRECT)) {
+    if (count > 1 && strcmp(arglist[count - 2], ((char[]) {LEFT_REDIRECT, '\0'})) == 0) {
         return INPUT;
     }
-    if (count > 1 && strcmp(arglist[count - 2], RIGHT_REDIRECT)) {
+    if (count > 1 && strcmp(arglist[count - 2], ((char[]) {RIGHT_REDIRECT, '\0'})) == 0) {
         return OUTPUT;
     }
     for (int i = 1; i < count; i++) {
-        if (strcmp(arglist[i], PIPE)) {
+        if (strcmp(arglist[i], ((char[]) {PIPE, '\0'})) == 0) {
             return SING_PIPE;
         }
     }
