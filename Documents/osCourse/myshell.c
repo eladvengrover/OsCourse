@@ -110,14 +110,23 @@ int handle_pipe_op(int count, char** arglist) {
     }
     int pid = fork();
     if (pid == -1) {
+        close(pfds[0]);
+        close(pfds[1]);
         return -1;
     }
     if (pid == 0) {
         // Child proccess
         close(pfds[0]);
+        if (dup2(pfds[1], STDOUT_FILENO) == -1) {
+            return -1;
+        }
+        close(pfds[1]);
+        if (execvp(arglist[0], arglist) == -1) {
+        perror("execvp failed!");
+        exit(1);
     } else {
         // Parent proccess
-    
+
     }
 
     return 1;
