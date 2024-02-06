@@ -122,8 +122,9 @@ int handle_pipe_op(int count, char** arglist) {
         }
         close(pfds[1]);
         if (execvp(arglist[0], arglist) == -1) {
-        perror("execvp failed!");
-        exit(1);
+            perror("execvp failed!");
+            exit(1);
+        }
     } else {
         // Parent proccess
 
