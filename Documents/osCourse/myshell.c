@@ -5,6 +5,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <signal.h>
 
 typedef enum {
     AMPERSAND = '&',
@@ -32,10 +33,19 @@ OperationType get_operation_type(int count, char **arglist);
 int get_pipe_index(int count, char **arglist);
 void exec_command(char **arglist);
 int wait_pid(int pid);
+void handle_sigint();
 
 
 
 int prepare(void) {
+    if (signal(SIGINT, SIG_IGN) == SIG_ERR) {
+        perror("signal SIGINT -> SIG_IGN error!");
+        return -1;
+    }
+    if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
+        perror("signal SIGCHILD -> SIG_IGN error!");
+        return -1;
+    }
     return 0;
 }
 
@@ -70,10 +80,11 @@ int handle_reg_op(int count, char** arglist) {
         return 0;
     }
     if (pid == 0) {
-        // Child proccess
+        // Child process
+        handle_sigint();
         exec_command(arglist);
     }
-    // Parent proccess
+    // Parent process
     return wait_pid(pid);
 }
 
@@ -84,7 +95,7 @@ int handle_reg_bg_op(int count, char** arglist) {
         return 0;
     }
     if (pid == 0) {
-        // Child proccess
+        // Child process
         arglist[count - 1] = NULL;
         exec_command(arglist);
     }
@@ -107,7 +118,8 @@ int handle_pipe_op(int count, char** arglist) {
         return 0;
     }
     if (pid == 0) {
-        // Child proccess #1
+        // Child process #1
+        handle_sigint();
         close(pfds[0]);
         if (dup2(pfds[1], STDOUT_FILENO) == -1) {
             perror("dup2 error!");
@@ -116,7 +128,7 @@ int handle_pipe_op(int count, char** arglist) {
         close(pfds[1]);
         exec_command(arglist);
     }
-    // Parent proccess
+    // Parent process
     int pid_2 = fork();
     if (pid_2 == -1) {
         perror("fork error!");
@@ -125,7 +137,8 @@ int handle_pipe_op(int count, char** arglist) {
         return 0;
     }
     if (pid_2 == 0) {
-        // Child proccess #2
+        // Child process #2
+        handle_sigint();
         close(pfds[1]);
         if (dup2(pfds[0], STDIN_FILENO) == -1) {
             perror("dup2 error!");
@@ -134,7 +147,7 @@ int handle_pipe_op(int count, char** arglist) {
         close(pfds[0]);
         exec_command(arglist + pipe_index + 1);
     }
-    // Parent proccess
+    // Parent process
     close(pfds[0]);
     close(pfds[1]);
     // Waiting for children
@@ -154,7 +167,8 @@ int handle_input_op(int count, char** arglist) {
         return 0;
     }
     if (pid == 0) {
-        // Child proccess
+        // Child process
+        handle_sigint();
         if (dup2(fd, STDIN_FILENO) == -1) {
             perror("dup2 error!");
             exit(1);
@@ -162,7 +176,7 @@ int handle_input_op(int count, char** arglist) {
         close(fd);
         exec_command(arglist);
     }
-    // Parent proccess
+    // Parent process
     return wait_pid(pid);
 }
 
@@ -179,7 +193,8 @@ int handle_output_op(int count, char** arglist) {
         return 0;
     }
     if (pid == 0) {
-        // Child proccess
+        // Child process
+        handle_sigint();
         if (dup2(fd, STDOUT_FILENO) == -1) {
             perror("dup2 error!");
             exit(1);
@@ -187,7 +202,7 @@ int handle_output_op(int count, char** arglist) {
         close(fd);
         exec_command(arglist);
     }
-    // Parent proccess
+    // Parent process
     return wait_pid(pid);
 }
 
@@ -222,6 +237,13 @@ void exec_command(char **arglist) {
     }
 }
 
+void handle_sigint() {
+    if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
+        perror("signal SIGINT -> SIG_DFL error!");
+        exit(1);
+    }
+}
+
 int wait_pid(int pid) {
     if (waitpid(pid, NULL, 0) == -1 && errno != ECHILD && errno != EINTR) {
         perror("waitpid error!");
@@ -229,9 +251,6 @@ int wait_pid(int pid) {
     }
     return 1;
 }
-
-
-
 
 int finalize(void) {
     return 0;
