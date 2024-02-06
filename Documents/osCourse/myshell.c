@@ -108,7 +108,7 @@ int handle_reg_bg_op(int count, char** arglist) {
 int handle_pipe_op(int count, char** arglist) {
     int pfds[2];
     int pipe_index = get_pipe_index(count, arglist);
-    printf("pipe_index: %d\n", pipe_index);
+    arglist[pipe_index] = NULL;
     if (pipe(pfds) == -1) {
         return -1;
     }
@@ -132,38 +132,37 @@ int handle_pipe_op(int count, char** arglist) {
     } else {
         // Parent proccess
         int pid_2 = fork();
-    if (pid_2 == -1) {
-        close(pfds[0]);
-        close(pfds[1]);
-        return -1;
-    }
-    if (pid == 0) {
-        // Child proccess #2
-        printf("child 2");
-        close(pfds[1]);
-        if (dup2(pfds[0], STDIN_FILENO) == -1) {
+        if (pid_2 == -1) {
+            close(pfds[0]);
+            close(pfds[1]);
             return -1;
         }
-        close(pfds[0]);
-        if (execvp(arglist[pipe_index + 1], arglist + pipe_index + 1) == -1) {
-            perror("execvp failed!");
-            exit(1);
-        }
-    } else {
-        // Parent proccess
-        close(pfds[0]);
-        close(pfds[1]);
-        // Waiting for child #1
-        if (waitpid(pid, NULL, 0) == -1) {
-            return 0;
+        if (pid_2 == 0) {
+            // Child proccess #2
+            close(pfds[1]);
+            if (dup2(pfds[0], STDIN_FILENO) == -1) {
+                return -1;
             }
-        // Waiting for child #2
-        if (waitpid(pid_2, NULL, 0) == -1) {
-            return 0;
+            close(pfds[0]);
+            if (execvp(arglist[pipe_index + 1], arglist + pipe_index + 1) == -1) {
+                perror("execvp failed!");
+                exit(1);
             }
-        return 1;
+        } else {
+            // Parent proccess
+            close(pfds[0]);
+            close(pfds[1]);
+            // Waiting for child #1
+            if (waitpid(pid, NULL, 0) == -1) {
+                return 0;
+            }
+            // Waiting for child #2
+            if (waitpid(pid_2, NULL, 0) == -1) {
+                return 0;
+            }
+            return 1;
+            }
         }
-    }
 
     return 1;
 }
