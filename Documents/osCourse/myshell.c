@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <fcntl.h>
 
 typedef enum {
     AMPERSAND = '&',
@@ -172,7 +173,31 @@ int handle_input_op(int count, char** arglist) {
 }
 
 int handle_output_op(int count, char** arglist) {
-    return 0;
+    int fd = open(arglist[count - 1], O_WRONLY | O_CREAT | O_TRUNC, 0777);
+    arglist[count - 2] = NULL;
+    if (fd == -1) {
+        return 0;
+    }
+    int pid = fork();
+    if (pid == -1) {
+        return -1;
+    }
+    if (pid == 0) {
+        // Child proccess
+        if (dup2(fd, STDOUT_FILENO) == -1) {
+            return -1;
+        }
+        close(fd);
+        if (execvp(arglist[0], arglist) == -1) {
+            perror("execvp failed!");
+            exit(1);
+        }
+    }
+    // Parent proccess
+    if (waitpid(pid, NULL, 0) == -1) {
+        return 0;
+    }
+    return 1;
 }
 
 int get_pipe_index(int count, char **arglist) {
