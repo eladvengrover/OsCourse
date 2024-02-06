@@ -29,6 +29,7 @@ int handle_input_op(int count, char** arglist);
 int handle_output_op(int count, char** arglist);
 OperationType get_operation_type(int count, char **arglist);
 int get_pipe_index(int count, char **arglist);
+void exec_command(char **arglist);
 
 
 
@@ -69,10 +70,7 @@ int handle_reg_op(int count, char** arglist) {
     }
     if (pid == 0) {
         // Child proccess
-        if (execvp(arglist[0], arglist) == -1) {
-        perror("execvp failed!");
-        exit(1);
-    }
+        exec_command(arglist);
     } else {
         // Parent proccess
         int status;
@@ -96,11 +94,7 @@ int handle_reg_bg_op(int count, char** arglist) {
         // Child proccess
         free((char*) arglist[count]);
         arglist[count - 1] = NULL;
-        
-        if (execvp(arglist[0], arglist) == -1) {
-            perror("execvp failed!");
-            exit(1);
-        }
+        exec_command(arglist);
     }
     return 1;
 }
@@ -125,10 +119,7 @@ int handle_pipe_op(int count, char** arglist) {
             return -1;
         }
         close(pfds[1]);
-        if (execvp(arglist[0], arglist) == -1) {
-            perror("execvp failed!");
-            exit(1);
-        }
+        exec_command(arglist);
     } else {
         // Parent proccess
         int pid_2 = fork();
@@ -144,10 +135,7 @@ int handle_pipe_op(int count, char** arglist) {
                 return -1;
             }
             close(pfds[0]);
-            if (execvp(arglist[pipe_index + 1], arglist + pipe_index + 1) == -1) {
-                perror("execvp failed!");
-                exit(1);
-            }
+            exec_command(arglist + pipe_index + 1);
         } else {
             // Parent proccess
             close(pfds[0]);
@@ -168,7 +156,28 @@ int handle_pipe_op(int count, char** arglist) {
 }
 
 int handle_input_op(int count, char** arglist) {
-    return 0;
+    int fd = open(arglist[count - 1], O_RDONLY);
+    arglist[count - 2] = NULL;
+    if (fd == -1) {
+        return 0;
+    }
+    int pid = fork();
+    if (pid == -1) {
+        return -1;
+    }
+    if (pid == 0) {
+        // Child proccess
+        if (dup2(fd, STDIN_FILENO) == -1) {
+            return -1;
+        }
+        close(fd);
+        exec_command(arglist);
+    }
+    // Parent proccess
+    if (waitpid(pid, NULL, 0) == -1) {
+        return 0;
+    }
+    return 1;
 }
 
 int handle_output_op(int count, char** arglist) {
@@ -187,10 +196,7 @@ int handle_output_op(int count, char** arglist) {
             return -1;
         }
         close(fd);
-        if (execvp(arglist[0], arglist) == -1) {
-            perror("execvp failed!");
-            exit(1);
-        }
+        exec_command(arglist);
     }
     // Parent proccess
     if (waitpid(pid, NULL, 0) == -1) {
@@ -223,7 +229,12 @@ OperationType get_operation_type(int count, char **arglist) {
     return get_pipe_index(count, arglist) != -1 ? SING_PIPE : REG;
 }
 
-
+void exec_command(char **arglist) {
+    if (execvp(arglist[0], arglist) == -1) {
+        perror("execvp failed!");
+        exit(1);
+    }
+}
 
 
 
