@@ -34,6 +34,7 @@ int get_pipe_index(int count, char **arglist);
 void exec_command(char **arglist);
 int wait_pid(int pid);
 void handle_sigint();
+void handle_sigchild();
 
 
 
@@ -82,6 +83,7 @@ int handle_reg_op(int count, char** arglist) {
     if (pid == 0) {
         // Child process
         handle_sigint();
+        handle_sigchild();
         exec_command(arglist);
     }
     // Parent process
@@ -120,6 +122,7 @@ int handle_pipe_op(int count, char** arglist) {
     if (pid == 0) {
         // Child process #1
         handle_sigint();
+        handle_sigchild();
         close(pfds[0]);
         if (dup2(pfds[1], STDOUT_FILENO) == -1) {
             perror("dup2 error!");
@@ -139,6 +142,7 @@ int handle_pipe_op(int count, char** arglist) {
     if (pid_2 == 0) {
         // Child process #2
         handle_sigint();
+        handle_sigchild();
         close(pfds[1]);
         if (dup2(pfds[0], STDIN_FILENO) == -1) {
             perror("dup2 error!");
@@ -169,6 +173,7 @@ int handle_input_op(int count, char** arglist) {
     if (pid == 0) {
         // Child process
         handle_sigint();
+        handle_sigchild();
         if (dup2(fd, STDIN_FILENO) == -1) {
             perror("dup2 error!");
             exit(1);
@@ -195,6 +200,7 @@ int handle_output_op(int count, char** arglist) {
     if (pid == 0) {
         // Child process
         handle_sigint();
+        handle_sigchild();
         if (dup2(fd, STDOUT_FILENO) == -1) {
             perror("dup2 error!");
             exit(1);
@@ -240,6 +246,13 @@ void exec_command(char **arglist) {
 void handle_sigint() {
     if (signal(SIGINT, SIG_DFL) == SIG_ERR) {
         perror("signal SIGINT -> SIG_DFL error!");
+        exit(1);
+    }
+}
+
+void handle_sigchild() {
+    if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
+        perror("signal SIGCHLD -> SIG_DFL error!");
         exit(1);
     }
 }
