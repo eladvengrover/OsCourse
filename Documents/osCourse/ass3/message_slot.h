@@ -14,7 +14,7 @@ typedef struct channel {
     int channel_id;
     char last_message[BUF_LEN];
     int last_message_size;
-    channel *next;
+    struct channel *next;
 } channel;
 
 typedef struct message_slot {
