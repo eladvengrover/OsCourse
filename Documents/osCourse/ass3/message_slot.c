@@ -17,7 +17,7 @@
 MODULE_LICENSE("GPL");
 
 //Our custom definitions of IOCTL operations
-#include "chardev.h"
+#include "message_slot.h"
 
 struct chardev_info {
   spinlock_t lock;
