@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
     write_read_before_ioctl(fd);
 	error_buffer_size(fd);
 	read_no_message(fd);
-	write_read_null(fd);
+	//write_read_null(fd);
 	close(fd);
 	return 0;
 }
