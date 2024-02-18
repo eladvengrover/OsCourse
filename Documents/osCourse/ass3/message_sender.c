@@ -18,11 +18,11 @@ int main(int argc, char const *argv[])
     channel_id = atoi(argv[2]);
 
     fd = open(argv[1], O_WRONLY);
-    if (fd != 0) {
+    if (fd < 0) {
         perror("open file error");
         exit(1);
     }
-    if (ioctl(fd, MSG_SLOT_CHANNEL, channel_id) != 0) {
+    if (ioctl(fd, MSG_SLOT_CHANNEL, channel_id) < 0) {
         perror("ioctl error");
         exit(1);
     }

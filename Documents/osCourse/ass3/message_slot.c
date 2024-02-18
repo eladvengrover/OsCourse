@@ -9,6 +9,7 @@
 #include <linux/fs.h>
 #include <linux/uaccess.h>
 #include <linux/string.h>
+#include <linux/slab.h>
 
 MODULE_LICENSE("GPL");
 
@@ -20,7 +21,7 @@ static message_slot ms[256];
 static int device_open( struct inode* inode,
                         struct file*  file )
 {
-    ms[iminor(inode)].is_open = 1;
+    ms[iminor(inode) - 1].is_open = 1;
     return 0;
 }
 
@@ -37,22 +38,22 @@ static ssize_t device_read( struct file* file,
                             loff_t*      offset )
 {
     int bytes_read;
-    channel *channel;
-    channel = (channel*) file->private_data;
+    channel *open_channel;
+    open_channel = (channel*) file->private_data;
 
-    if (channel == NULL || buffer == NULL) {
+    if (open_channel == NULL || buffer == NULL) {
         return -EINVAL;
     }
-    if (channel->last_message_size == 0) {
+    if (open_channel->last_message_size == 0) {
         return -EWOULDBLOCK;
     }
-    if (length < channel->last_message_size) {
+    if (length < open_channel->last_message_size) {
         return -ENOSPC;
     }
 
-    for(bytes_read = 0; bytes_read < channel->last_message_size; bytes_read++) {
-        if (put_user(channel->last_message[bytes_read], &buffer[bytes_read]) != 0) {
-            return EIO;
+    for(bytes_read = 0; bytes_read < open_channel->last_message_size; bytes_read++) {
+        if (put_user(open_channel->last_message[bytes_read], &buffer[bytes_read]) != 0) {
+            return -EIO;
         }
     }
     return bytes_read;
@@ -64,10 +65,10 @@ static ssize_t device_write( struct file*       file,
                              loff_t*            offset)
 {
     int bytes_write;
-    channel *channel;
-    channel = (channel*) file->private_data;
+    channel *open_channel;
+    open_channel = (channel*) file->private_data;
 
-    if (channel == NULL || buffer == NULL) {
+    if (open_channel == NULL || buffer == NULL) {
         return -EINVAL;
     }
     if (length > BUF_LEN || length <= 0) {
@@ -75,11 +76,11 @@ static ssize_t device_write( struct file*       file,
     }
 
     for(bytes_write = 0; bytes_write < length; bytes_write++) {
-        if (get_user(channel->last_message[bytes_write], &buffer[bytes_write]) != 0) {
+        if (get_user(open_channel->last_message[bytes_write], &buffer[bytes_write]) != 0) {
             return EIO;
         }
     }
-    channel->last_message_size = bytes_write;
+    open_channel->last_message_size = bytes_write;
     return bytes_write;
 }
 
@@ -111,7 +112,7 @@ static long device_ioctl( struct   file* file,
     if (curr_channel == NULL) {
         curr_channel = (channel*) kmalloc(sizeof(channel*), GFP_KERNEL);
         if (curr_channel == NULL) {
-            return -ENONMEM;
+            return -ENOMEM;
         }
         if (ms[minor].head_channel == NULL) { // Case 1
             ms[minor].head_channel = curr_channel;
@@ -139,7 +140,7 @@ struct file_operations Fops = {
 
 static int __init init(void)
 {
-  int rc = -1;
+  int rc = -1, i;
   rc = register_chrdev(MAJOR_NUM, DEVICE_FILE_NAME, &Fops );
 
   if(rc < 0) {
@@ -148,7 +149,7 @@ static int __init init(void)
     return rc;
   }
 
-  for(int i = 0; i< 256; i++) {
+  for(i = 0; i< 256; i++) {
     ms[i].head_channel = NULL;
     ms[i].size = 0;
     ms[i].is_open = 0;
@@ -169,11 +170,9 @@ static void __exit cleanup(void)
         curr_channel = next_channel;
     }
   }
-  unregister_chrdev(MAJOR_NUM, DEVICE_RANGE_NAME);
+  unregister_chrdev(MAJOR_NUM, DEVICE_FILE_NAME);
 }
 
-//---------------------------------------------------------------
 module_init(init);
 module_exit(cleanup);
 
-//========================= END OF FILE =========================

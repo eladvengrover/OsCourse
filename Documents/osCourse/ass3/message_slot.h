@@ -8,7 +8,7 @@
 
 #define MAX_CHANNELS_PER_SLOT 0x100000
 #define BUF_LEN 128
-#define DEVICE_FILE_NAME "message_slot"1
+#define DEVICE_FILE_NAME "message_slot"
 
 typedef struct channel {
     int channel_id;
