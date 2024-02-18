@@ -64,8 +64,9 @@ static ssize_t device_write( struct file*       file,
                              size_t             length,
                              loff_t*            offset)
 {
-    int bytes_write;
+    int bytes_write, i;
     channel *open_channel;
+    char msg_holder[BUF_LEN];
     open_channel = (channel*) file->private_data;
 
     if (open_channel == NULL || buffer == NULL) {
@@ -76,9 +77,13 @@ static ssize_t device_write( struct file*       file,
     }
 
     for(bytes_write = 0; bytes_write < length; bytes_write++) {
-        if (get_user(open_channel->last_message[bytes_write], &buffer[bytes_write]) != 0) {
-            return EIO;
+        if (get_user(msg_holder[bytes_write], &buffer[bytes_write]) != 0) {
+            return -EIO;
         }
+    }
+
+    for(i = 0; i < bytes_write; i++) {
+        open_channel->last_message[i] = msg_holder[i];
     }
     open_channel->last_message_size = bytes_write;
     return bytes_write;
