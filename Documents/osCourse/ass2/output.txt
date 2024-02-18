@@ -1,64 +1,79 @@
-int handle_pipe_op(int count, char** arglist) {
-    int pfds[2];
-    int pipe_index = get_pipe_index(count, arglist);
-    arglist[pipe_index] = NULL;
-    if (pipe(pfds) == -1) {
-        return -1;
-    }
-    int pid = fork();
-    if (pid == -1) {
-        close(pfds[0]);
-        close(pfds[1]);
-        return -1;
-    }
-    if (pid == 0) {
-        // Child proccess #1
-        close(pfds[0]);
-        if (dup2(pfds[1], STDOUT_FILENO) == -1) {
-            return -1;
-        }
-        close(pfds[1]);
-        if (execvp(arglist[0], arglist) == -1) {
-            perror("execvp failed!");
-            exit(1);
-        }
-    } else {
-        // Parent proccess
-        int pid_2 = fork();
-        if (pid_2 == -1) {
-            close(pfds[0]);
-            close(pfds[1]);
-            return -1;
-        }
-        if (pid == 0) {
-            // Child proccess #2
-            close(pfds[1]);
-            if (dup2(pfds[0], STDIN_FILENO) == -1) {
-                return -1;
-            }
-            close(pfds[0]);
-            if (execvp(arglist[pipe_index + 1], arglist + pipe_index + 1) == -1) {
-                perror("execvp failed!");
-                exit(1);
-            }
-        } else {
-            // Parent proccess
-            close(pfds[0]);
-            close(pfds[1]);
-            // Waiting for child #1
-            if (waitpid(pid, NULL, 0) == -1) {
-                return 0;
-            }
-            // Waiting for child #2
-            if (waitpid(pid_2, NULL, 0) == -1) {
-                return 0;
-            }
-            return 1;
-            }
-        }
-
-    return 1;
-}
-
-
-cat output.txt | grep if
+  CC [M]  /home/student/Documents/osCourse/ass3/message_slot.o
+/home/student/Documents/osCourse/ass3/message_slot.c: In function 'device_read':
+/home/student/Documents/osCourse/ass3/message_slot.c:41:24: error: expected expression before ')' token
+   41 |     channel = (channel*) file->private_data;
+      |                        ^
+/home/student/Documents/osCourse/ass3/message_slot.c: In function 'device_write':
+/home/student/Documents/osCourse/ass3/message_slot.c:68:24: error: expected expression before ')' token
+   68 |     channel = (channel*) file->private_data;
+      |                        ^
+/home/student/Documents/osCourse/ass3/message_slot.c: In function 'device_ioctl':
+/home/student/Documents/osCourse/ass3/message_slot.c:112:35: error: implicit declaration of function 'kmalloc'; did you mean 'd_alloc'? [-Werror=implicit-function-declaration]
+  112 |         curr_channel = (channel*) kmalloc(sizeof(channel*), GFP_KERNEL);
+      |                                   ^~~~~~~
+      |                                   d_alloc
+/home/student/Documents/osCourse/ass3/message_slot.c:112:24: warning: cast to pointer from integer of different size [-Wint-to-pointer-cast]
+  112 |         curr_channel = (channel*) kmalloc(sizeof(channel*), GFP_KERNEL);
+      |                        ^
+/home/student/Documents/osCourse/ass3/message_slot.c:114:21: error: 'ENONMEM' undeclared (first use in this function); did you mean 'ENOMEM'?
+  114 |             return -ENONMEM;
+      |                     ^~~~~~~
+      |                     ENOMEM
+/home/student/Documents/osCourse/ass3/message_slot.c:114:21: note: each undeclared identifier is reported only once for each function it appears in
+In file included from /home/student/Documents/osCourse/ass3/message_slot.c:15:
+/home/student/Documents/osCourse/ass3/message_slot.c: In function 'init':
+/home/student/Documents/osCourse/ass3/message_slot.h:11:40: error: expected ')' before numeric constant
+   11 | #define DEVICE_FILE_NAME "message_slot"1
+      |                                        ^
+/home/student/Documents/osCourse/ass3/message_slot.c:143:35: note: in expansion of macro 'DEVICE_FILE_NAME'
+  143 |   rc = register_chrdev(MAJOR_NUM, DEVICE_FILE_NAME, &Fops );
+      |                                   ^~~~~~~~~~~~~~~~
+/home/student/Documents/osCourse/ass3/message_slot.c:143:8: error: too few arguments to function 'register_chrdev'
+  143 |   rc = register_chrdev(MAJOR_NUM, DEVICE_FILE_NAME, &Fops );
+      |        ^~~~~~~~~~~~~~~
+In file included from /home/student/Documents/osCourse/ass3/message_slot.c:9:
+/usr/src/linux-headers-5.10.0-21-common/include/linux/fs.h:2600:19: note: declared here
+ 2600 | static inline int register_chrdev(unsigned int major, const char *name,
+      |                   ^~~~~~~~~~~~~~~
+In file included from /home/student/Documents/osCourse/ass3/message_slot.c:15:
+/home/student/Documents/osCourse/ass3/message_slot.h:11:40: error: expected ')' before numeric constant
+   11 | #define DEVICE_FILE_NAME "message_slot"1
+      |                                        ^
+/home/student/Documents/osCourse/ass3/message_slot.c:147:24: note: in expansion of macro 'DEVICE_FILE_NAME'
+  147 |                        DEVICE_FILE_NAME, MAJOR_NUM);
+      |                        ^~~~~~~~~~~~~~~~
+In file included from /usr/src/linux-headers-5.10.0-21-common/include/linux/printk.h:7,
+                 from /usr/src/linux-headers-5.10.0-21-common/include/linux/kernel.h:16,
+                 from /home/student/Documents/osCourse/ass3/message_slot.c:7:
+/usr/src/linux-headers-5.10.0-21-common/include/linux/kern_levels.h:5:18: warning: format '%d' expects a matching 'int' argument [-Wformat=]
+    5 | #define KERN_SOH "\001"  /* ASCII Start Of Header */
+      |                  ^~~~~~
+/usr/src/linux-headers-5.10.0-21-common/include/linux/kern_levels.h:11:18: note: in expansion of macro 'KERN_SOH'
+   11 | #define KERN_ERR KERN_SOH "3" /* error conditions */
+      |                  ^~~~~~~~
+/home/student/Documents/osCourse/ass3/message_slot.c:146:12: note: in expansion of macro 'KERN_ERR'
+  146 |     printk(KERN_ERR "%s registraion failed for %d\n",
+      |            ^~~~~~~~
+/home/student/Documents/osCourse/ass3/message_slot.c:146:49: note: format string is defined here
+  146 |     printk(KERN_ERR "%s registraion failed for %d\n",
+      |                                                ~^
+      |                                                 |
+      |                                                 int
+/home/student/Documents/osCourse/ass3/message_slot.c:151:3: error: 'for' loop initial declarations are only allowed in C99 or C11 mode
+  151 |   for(int i = 0; i< 256; i++) {
+      |   ^~~
+/home/student/Documents/osCourse/ass3/message_slot.c:151:3: note: use option '-std=c99', '-std=gnu99', '-std=c11' or '-std=gnu11' to compile your code
+/home/student/Documents/osCourse/ass3/message_slot.c: In function 'cleanup':
+/home/student/Documents/osCourse/ass3/message_slot.c:168:9: error: implicit declaration of function 'kfree' [-Werror=implicit-function-declaration]
+  168 |         kfree(curr_channel);
+      |         ^~~~~
+/home/student/Documents/osCourse/ass3/message_slot.c:172:32: error: 'DEVICE_RANGE_NAME' undeclared (first use in this function); did you mean 'DEVICE_FILE_NAME'?
+  172 |   unregister_chrdev(MAJOR_NUM, DEVICE_RANGE_NAME);
+      |                                ^~~~~~~~~~~~~~~~~
+      |                                DEVICE_FILE_NAME
+cc1: some warnings being treated as errors
+make[3]: *** [/usr/src/linux-headers-5.10.0-21-common/scripts/Makefile.build:291: /home/student/Documents/osCourse/ass3/message_slot.o] Error 1
+make[2]: *** [/usr/src/linux-headers-5.10.0-21-common/Makefile:1861: /home/student/Documents/osCourse/ass3] Error 2
+make[1]: *** [/usr/src/linux-headers-5.10.0-21-common/Makefile:185: __sub-make] Error 2
+make[1]: Leaving directory '/usr/src/linux-headers-5.10.0-21-amd64'
+make: *** [Makefile:6: all] Error 2
