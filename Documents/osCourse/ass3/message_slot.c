@@ -15,20 +15,23 @@ MODULE_LICENSE("GPL");
 
 #include "message_slot.h"
 
-static message_slot ms[256];
+void free_channels_list(channel *head_channel);
+void free_ms(void);
+
+static message_slot ms[257];
 
 //================== DEVICE FUNCTIONS ===========================
 static int device_open( struct inode* inode,
                         struct file*  file )
 {
-    ms[iminor(inode) - 1].is_open = 1;
+    ms[iminor(inode)].is_open = 1;
     return 0;
 }
 
 static int device_release( struct inode* inode,
                            struct file*  file)
 {
-    ms[iminor(inode) - 1].is_open = 0;
+    ms[iminor(inode)].is_open = 0;
     return 0;
 }
 
@@ -98,7 +101,7 @@ static long device_ioctl( struct   file* file,
     if (ioctl_command_id != MSG_SLOT_CHANNEL || ioctl_param == 0) {
         return -EINVAL;
     }
-    minor = iminor(file->f_inode) - 1;
+    minor = iminor(file->f_inode);
     if (ms[minor].size == MAX_CHANNELS_PER_SLOT || ms[minor].is_open == 0) {
         return -EINVAL;
     }
@@ -134,6 +137,22 @@ static long device_ioctl( struct   file* file,
     return 0;
 }
 
+void free_channels_list(channel *head_channel) {
+    channel *next_channel;
+    while (head_channel != NULL) {
+            next_channel = head_channel->next;
+            kfree(head_channel);
+            head_channel = next_channel;
+        }
+}
+
+void free_ms() {
+    int i;
+    for(i = 0; i < 257; i++) {
+        free_channels_list(ms[i].head_channel);
+    }
+}
+
 struct file_operations Fops = {
   .owner	  = THIS_MODULE, 
   .read           = device_read,
@@ -154,7 +173,7 @@ static int __init init(void)
     return rc;
   }
 
-  for(i = 0; i< 256; i++) {
+  for(i = 0; i< 257; i++) {
     ms[i].head_channel = NULL;
     ms[i].size = 0;
     ms[i].is_open = 0;
@@ -165,17 +184,8 @@ static int __init init(void)
 
 static void __exit cleanup(void)
 {
-  int i;
-  channel *curr_channel, *next_channel;
-  for(i = 0; i < 256; i++) {
-    curr_channel = ms[i].head_channel;
-    while (curr_channel != NULL) {
-        next_channel = curr_channel->next;
-        kfree(curr_channel);
-        curr_channel = next_channel;
-    }
-  }
-  unregister_chrdev(MAJOR_NUM, DEVICE_FILE_NAME);
+    free_ms();
+    unregister_chrdev(MAJOR_NUM, DEVICE_FILE_NAME);
 }
 
 module_init(init);
