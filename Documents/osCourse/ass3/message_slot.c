@@ -115,7 +115,7 @@ static long device_ioctl( struct   file* file,
 
     // There are no channels at all / There is no channel with the given channel id
     if (curr_channel == NULL) {
-        curr_channel = (channel*) kmalloc(sizeof(channel*), GFP_KERNEL);
+        curr_channel = (channel*) kmalloc(sizeof(channel), GFP_KERNEL);
         if (curr_channel == NULL) {
             return -ENOMEM;
         }
