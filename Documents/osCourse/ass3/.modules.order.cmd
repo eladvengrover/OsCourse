@@ -1,0 +1,1 @@
+cmd_/home/student/Documents/osCourse/ass3/modules.order := {   echo /home/student/Documents/osCourse/ass3/message_slot.ko; :; } | awk '!x[$$0]++' - > /home/student/Documents/osCourse/ass3/modules.order
