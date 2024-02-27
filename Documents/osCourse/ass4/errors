@@ -1,0 +1,35 @@
+ass4/queue.c: In function 'initQueue':
+ass4/queue.c:34:13: warning: implicit declaration of function 'malloc' [-Wimplicit-function-declaration]
+   34 |     queue = malloc(sizeof(Queue));
+      |             ^~~~~~
+ass4/queue.c:34:13: warning: incompatible implicit declaration of built-in function 'malloc'
+ass4/queue.c:6:1: note: include '<stdlib.h>' or provide a declaration of 'malloc'
+    5 | #include <stdatomic.h>
+  +++ |+#include <stdlib.h>
+    6 | void initQueue(void);
+ass4/queue.c: In function 'destroyQueue':
+ass4/queue.c:48:5: warning: implicit declaration of function 'free' [-Wimplicit-function-declaration]
+   48 |     free(queue);
+      |     ^~~~
+ass4/queue.c:48:5: warning: incompatible implicit declaration of built-in function 'free'
+ass4/queue.c:48:5: note: include '<stdlib.h>' or provide a declaration of 'free'
+ass4/queue.c: In function 'enqueue':
+ass4/queue.c:55:16: warning: incompatible implicit declaration of built-in function 'malloc'
+   55 |     new_item = malloc(sizeof(Item));
+      |                ^~~~~~
+ass4/queue.c:55:16: note: include '<stdlib.h>' or provide a declaration of 'malloc'
+ass4/queue.c: In function 'dequeue':
+ass4/queue.c:81:5: warning: incompatible implicit declaration of built-in function 'free'
+   81 |     free(dequeued_item);
+      |     ^~~~
+ass4/queue.c:81:5: note: include '<stdlib.h>' or provide a declaration of 'free'
+ass4/queue.c: In function 'tryDequeue':
+ass4/queue.c:99:5: warning: incompatible implicit declaration of built-in function 'free'
+   99 |     free(dequeued_item);
+      |     ^~~~
+ass4/queue.c:99:5: note: include '<stdlib.h>' or provide a declaration of 'free'
+ass4/queue.c: In function 'free_queue_items':
+ass4/queue.c:125:9: warning: incompatible implicit declaration of built-in function 'free'
+  125 |         free(curr_item);
+      |         ^~~~
+ass4/queue.c:125:9: note: include '<stdlib.h>' or provide a declaration of 'free'
