@@ -52,10 +52,10 @@ void destroyQueue(void) {
 void enqueue(void* value) {
     Item *new_item;
 
-    mtx_lock(&queue->mutex);
     new_item = malloc(sizeof(Item));
     new_item->value = value;
     new_item->next = NULL;
+    mtx_lock(&queue->mutex);
     if (queue->size == 0) {
         queue->first = new_item;
     } else {
@@ -63,7 +63,10 @@ void enqueue(void* value) {
     }
     queue->last = new_item;
     queue->size++;
-    cnd_signal(&queue->queue_not_empty);
+    if (atomic_load(&waiting_threads) > 0) {
+        cnd_signal(&queue->queue_not_empty);
+    }
+    
     mtx_unlock(&queue->mutex);
 }
 
@@ -72,16 +75,22 @@ void* dequeue(void) {
     void *returned_value;
     mtx_lock(&queue->mutex);
     while (queue->size == 0) {
-        cnd_wait(&queue->queue_not_empty, &queue->mutex);
         atomic_fetch_add(&waiting_threads, 1);
+        cnd_wait(&queue->queue_not_empty, &queue->mutex);
+        atomic_fetch_sub(&waiting_threads, 1);
     }
     dequeued_item = queue->first;
     returned_value = dequeued_item->value;
-    queue->first = queue->first->next;
+    if (queue->size == 1) {
+        queue->first = NULL;
+    } else {
+        queue->first = queue->first->next;
+    }
+    
     queue->size--;
     free(dequeued_item);
-    atomic_fetch_sub(&waiting_threads, 1);
     atomic_fetch_add(&visited_items, 1);
+    cnd_signal(&queue->queue_not_empty);
     mtx_unlock(&queue->mutex);
     return returned_value;
 }
