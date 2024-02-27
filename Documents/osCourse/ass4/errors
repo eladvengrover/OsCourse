@@ -1,35 +1,27 @@
-ass4/queue.c: In function 'initQueue':
-ass4/queue.c:34:13: warning: implicit declaration of function 'malloc' [-Wimplicit-function-declaration]
-   34 |     queue = malloc(sizeof(Queue));
-      |             ^~~~~~
-ass4/queue.c:34:13: warning: incompatible implicit declaration of built-in function 'malloc'
-ass4/queue.c:6:1: note: include '<stdlib.h>' or provide a declaration of 'malloc'
-    5 | #include <stdatomic.h>
-  +++ |+#include <stdlib.h>
-    6 | void initQueue(void);
-ass4/queue.c: In function 'destroyQueue':
-ass4/queue.c:48:5: warning: implicit declaration of function 'free' [-Wimplicit-function-declaration]
-   48 |     free(queue);
-      |     ^~~~
-ass4/queue.c:48:5: warning: incompatible implicit declaration of built-in function 'free'
-ass4/queue.c:48:5: note: include '<stdlib.h>' or provide a declaration of 'free'
-ass4/queue.c: In function 'enqueue':
-ass4/queue.c:55:16: warning: incompatible implicit declaration of built-in function 'malloc'
-   55 |     new_item = malloc(sizeof(Item));
-      |                ^~~~~~
-ass4/queue.c:55:16: note: include '<stdlib.h>' or provide a declaration of 'malloc'
-ass4/queue.c: In function 'dequeue':
-ass4/queue.c:81:5: warning: incompatible implicit declaration of built-in function 'free'
-   81 |     free(dequeued_item);
-      |     ^~~~
-ass4/queue.c:81:5: note: include '<stdlib.h>' or provide a declaration of 'free'
-ass4/queue.c: In function 'tryDequeue':
-ass4/queue.c:99:5: warning: incompatible implicit declaration of built-in function 'free'
-   99 |     free(dequeued_item);
-      |     ^~~~
-ass4/queue.c:99:5: note: include '<stdlib.h>' or provide a declaration of 'free'
-ass4/queue.c: In function 'free_queue_items':
-ass4/queue.c:125:9: warning: incompatible implicit declaration of built-in function 'free'
-  125 |         free(curr_item);
-      |         ^~~~
-ass4/queue.c:125:9: note: include '<stdlib.h>' or provide a declaration of 'free'
+void* dequeue(void) {
+    Item *dequeued_item;
+    void *returned_value;
+    mtx_lock(&queue->mutex);
+    while (queue->size == 0) {
+        atomic_fetch_add(&waiting_threads, 1);
+        cnd_wait(&queue->queue_not_empty, &queue->mutex);
+        atomic_fetch_sub(&waiting_threads, 1);
+    }
+    printf("---- DEQUEUE ----\n");
+    dequeued_item = queue->first;
+    returned_value = dequeued_item->value;
+    printf("old first: %d, old last: %d, old size: %d\n", *((int *)queue->first->value), *((int *)queue->last->value), queue->size);
+    printf("Dequeuing item %d\n", *((int *)returned_value));
+    if (queue->size == 1) {
+        queue->first = NULL;
+    } else {
+        queue->first = queue->first->next;
+    }
+    queue->size--;
+    printf("new first: %d, new size: %d\n", *((int *)queue->first->value), queue->size);
+    free(dequeued_item);
+    atomic_fetch_add(&visited_items, 1);
+    cnd_signal(&queue->queue_not_empty);
+    mtx_unlock(&queue->mutex);
+    return returned_value;
+}
