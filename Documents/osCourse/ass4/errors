@@ -161,6 +161,7 @@ void* dequeue(void) {
     returned_value = dequeued_item->value;
     if (queue->size == 1) {
         queue->first = NULL;
+        queue->last = NULL;
     } else {
         queue->first = queue->first->next;
     }
