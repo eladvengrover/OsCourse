@@ -1,0 +1,29 @@
+pcc_client.c: In function 'main':
+pcc_client.c:31:17: warning: assignment to 'uint16_t' {aka 'short unsigned int'} from 'char *' makes integer from pointer without a cast [-Wint-conversion]
+   31 |     server_port = argv[2];
+      |                 ^
+
+In file included from pcc_server.c:10:
+pcc_server.c: In function 'main':
+pcc_server.c:38:41: warning: passing argument 1 of '__bswap_16' makes integer from pointer without a cast [-Wint-conversion]
+   38 |     server_address.sin_port = htons(argv[1]);
+      |                                     ~~~~^~~
+      |                                         |
+      |                                         char *
+In file included from /usr/include/netinet/in.h:386,
+                 from pcc_server.c:10:
+/usr/include/x86_64-linux-gnu/bits/byteswap.h:34:24: note: expected '__uint16_t' {aka 'short unsigned int'} but argument is of type 'char *'
+   34 | __bswap_16 (__uint16_t __bsx)
+      |             ~~~~~~~~~~~^~~~~
+pcc_server.c:19:9: warning: unused variable 'file_fd' [-Wunused-variable]
+   19 |     int file_fd, server_socket_fd, client_socket_fd;
+      |         ^~~~~~~
+pcc_server.c:18:14: warning: unused variable 'server_port' [-Wunused-variable]
+   18 |     uint16_t server_port, N_net, N;
+      |              ^~~~~~~~~~~
+pcc_server.c:17:14: warning: unused variable 'pcc_total' [-Wunused-variable]
+   17 |     uint16_t pcc_total[95] = { 0 };
+      |              ^~~~~~~~~
+
+
+
