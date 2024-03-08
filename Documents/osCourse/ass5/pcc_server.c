@@ -14,9 +14,9 @@
 
 
 int main(int argc, char *argv[]) {
-    uint16_t pcc_total[95] = { 0 };
-    uint16_t server_port, N_net, N;
-    int file_fd, server_socket_fd, client_socket_fd;
+    // uint16_t pcc_total[95] = { 0 };
+    uint16_t N_net, N;
+    int server_socket_fd, client_socket_fd;
     struct sockaddr_in server_address, client_address;
     socklen_t client_len;
     char *buffer;
@@ -32,10 +32,15 @@ int main(int argc, char *argv[]) {
         perror("Failed opening a socket");
         exit(1);
     }
+    // if (setsockopt(server_socket_fd, SOL_SOCKET, SO_REUSEADDR, NULL, sizeof(int)) < 0) {
+    //     perror("failure");
+    //     exit(1);
+    // }
 
+    memset(&server_address, 0, sizeof(server_address));
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_port = htons(argv[1]);
+    server_address.sin_port = htons((uint16_t)atoi(argv[1]));
 
     if (bind(server_socket_fd, (struct sockaddr *) &server_address, sizeof(server_address) < 0)) {
         perror("Failed binding the server");
