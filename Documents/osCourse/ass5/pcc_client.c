@@ -32,7 +32,11 @@ int main(int argc, char *argv[]) {
     file_path = argv[3];
 
     file_fd = open(file_path, O_RDONLY);
-    // file_fd = open("/dev/urandom", O_RDONLY);
+
+    if (file_fd < 0) {
+        perror("Failed opening file");
+        exit(1);
+    }
     
     socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -67,8 +71,16 @@ int main(int argc, char *argv[]) {
     }
 
     buffer = malloc(st.st_size);
+    if (buffer == NULL) {
+        perror("Failed aloocate memory for buffer");
+        exit(1);
+    }
     while((bytes_read = read(file_fd, buffer, sizeof(buffer))) > 0) {
         send(socket_fd, buffer, bytes_read, 0);
+    }
+    if (bytes_read < 0) {
+        perror("Failed reading from file");
+        exit(1);
     }
     recv(socket_fd, &C_net, sizeof(C_net), 0);
 
